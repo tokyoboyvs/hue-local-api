@@ -124,6 +124,20 @@ APP_PORT=8000
 APP_RELOAD=false
 ```
 
+## Hue Bridge pairing
+
+To obtain a `HUE_APP_KEY`, press the physical button on the Hue Bridge, then run:
+
+```bash
+py scripts/get_hue_app_key.py <bridge_ip>
+```
+
+If the pairing succeeds, the script prints a value to copy into your `.env` file:
+
+```env
+HUE_APP_KEY=your_generated_key
+```
+
 ## Next steps
 
 - integration reelle du Hue Bridge
