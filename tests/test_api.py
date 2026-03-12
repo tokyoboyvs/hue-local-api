@@ -118,3 +118,45 @@ def test_unknown_room_returns_404():
 
     assert response.status_code == 404
     assert response.json() == {'detail': "Room 'kitchen' not found"}
+
+
+def test_bulk_turn_on_lights_updates_multiple_items():
+    response = client.post(
+        '/api/lights/actions/on',
+        headers=api_headers(),
+        json={'light_ids': ['light-1', 'light-2']}
+    )
+
+    assert response.status_code == 200
+    assert len(response.json()['updated_lights']) == 2
+    assert response.json()['missing_light_ids'] == []
+    assert response.json()['updated_lights'][0]['is_on'] is True
+    assert response.json()['updated_lights'][1]['is_on'] is True
+
+
+def test_bulk_toggle_lights_updates_multiple_items():
+    response = client.post(
+        '/api/lights/actions/toggle',
+        headers=api_headers(),
+        json={'light_ids': ['light-1', 'light-2']}
+    )
+
+    assert response.status_code == 200
+    assert len(response.json()['updated_lights']) == 2
+    assert response.json()['missing_light_ids'] == []
+    assert response.json()['updated_lights'][0]['is_on'] is False
+    assert response.json()['updated_lights'][1]['is_on'] is True
+
+
+def test_bulk_turn_off_lights_returns_missing_ids():
+    response = client.post(
+        '/api/lights/actions/off',
+        headers=api_headers(),
+        json={'light_ids': ['light-1', 'unknown']}
+    )
+
+    assert response.status_code == 200
+    assert len(response.json()['updated_lights']) == 1
+    assert response.json()['updated_lights'][0]['id'] == 'light-1'
+    assert response.json()['updated_lights'][0]['is_on'] is False
+    assert response.json()['missing_light_ids'] == ['unknown']
