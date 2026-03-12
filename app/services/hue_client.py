@@ -19,6 +19,7 @@ class HueClient:
         }
     
 
+# HTTP helpers
     def _get(self, path: str):
         if not self.is_configured():
             return []
@@ -55,6 +56,7 @@ class HueClient:
             return False
     
 
+# Light mapping helpers
     def _extract_brightness(self, raw_light: dict):
         dimming = raw_light.get('dimming')
         if not dimming:
@@ -70,20 +72,6 @@ class HueClient:
             return '#FFFFFF'
 
         return '#FFFFFF'
-    
-
-    def _map_light(self, raw_light: dict, room_name: str = 'unknown'):
-        metadata = raw_light.get('metadata', {})
-        on_data = raw_light.get('on', {})
-
-        return {
-            'id': raw_light.get('id', ''),
-            'name': metadata.get('name', raw_light.get('id', 'unknown-light')),
-            'room': room_name,
-            'is_on': on_data.get('on', False),
-            'brightness': self._extract_brightness(raw_light),
-            'color': self._extract_color(raw_light)
-        }
     
 
     def _get_room_map(self):
@@ -107,6 +95,21 @@ class HueClient:
         return room_map
 
 
+    def _map_light(self, raw_light: dict, room_name: str = 'unknown'):
+        metadata = raw_light.get('metadata', {})
+        on_data = raw_light.get('on', {})
+
+        return {
+            'id': raw_light.get('id', ''),
+            'name': metadata.get('name', raw_light.get('id', 'unknown-light')),
+            'room': room_name,
+            'is_on': on_data.get('on', False),
+            'brightness': self._extract_brightness(raw_light),
+            'color': self._extract_color(raw_light)
+        }
+
+
+# Read operations
     def check_bridge_connection(self):
         if not self.is_configured():
             return False
@@ -141,6 +144,34 @@ class HueClient:
 
     def get_light_by_id(self, light_id: str):
         return None
+
+
+    def get_rooms(self):
+        rooms = self._get('/resource/room')
+
+        items = []
+
+        for room in rooms:
+            metadata = room.get('metadata', {})
+            children = room.get('children', [])
+
+            items.append(
+                {
+                    'name': metadata.get('name', 'unknown'),
+                    'light_count': len(children)
+                }
+            )
+        
+        return items
+
+
+    def get_lights_by_room(self, room_name: str):
+        lights = self.get_lights()
+
+        return [
+            light for light in lights
+            if light['room'].lower() == room_name.lower()
+        ]
 
 
     def turn_on_light(self, light_id: str):
@@ -221,34 +252,7 @@ class HueClient:
         return light
 
 
-    def get_rooms(self):
-        rooms = self._get('/resource/room')
-
-        items = []
-
-        for room in rooms:
-            metadata = room.get('metadata', {})
-            children = room.get('children', [])
-
-            items.append(
-                {
-                    'name': metadata.get('name', 'unknown'),
-                    'light_count': len(children)
-                }
-            )
-        
-        return items
-
-
-    def get_lights_by_room(self, room_name: str):
-        lights = self.get_lights()
-
-        return [
-            light for light in lights
-            if light['room'].lower() == room_name.lower()
-        ]
-
-
+# Bulk operations
     def bulk_turn_on_lights(self, light_ids: list[str]):
         return [], []
 
