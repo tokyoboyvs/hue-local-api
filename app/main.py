@@ -10,6 +10,7 @@ app = FastAPI(
 
 app.include_router(lights_router, prefix='/api')
 
+
 @app.get('/health', response_model=HealthResponse)
 def health():
     return {

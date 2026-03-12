@@ -21,3 +21,9 @@ class MockHueClient:
     
     def get_lights(self):
         return self.lights
+    
+    def get_light_by_id(self, light_id: str):
+        for light in self.lights:
+            if light['id'] == light_id:
+                return light
+            return None

@@ -5,3 +5,6 @@ class HueClient:
     
     def get_lights(self):
         return []
+    
+    def get_light_by_id(self, light_id: str):
+        return None
