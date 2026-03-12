@@ -163,12 +163,7 @@ class HueClient:
 
 
     def set_color(self, light_id: str, color: str):
-        light = self.get_light_by_id(light_id)
-        if light is None:
-            return None
-        
-        light['color'] = color
-        return light
+        return None
 
 
     def get_rooms(self):
