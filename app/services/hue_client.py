@@ -72,18 +72,39 @@ class HueClient:
         return '#FFFFFF'
     
 
-    def _map_light(self, raw_light: dict):
+    def _map_light(self, raw_light: dict, room_name: str = 'unknown'):
         metadata = raw_light.get('metadata', {})
         on_data = raw_light.get('on', {})
 
         return {
             'id': raw_light.get('id', ''),
             'name': metadata.get('name', raw_light.get('id', 'unknown-light')),
-            'room': 'unknown',
+            'room': room_name,
             'is_on': on_data.get('on', False),
             'brightness': self._extract_brightness(raw_light),
             'color': self._extract_color(raw_light)
         }
+    
+
+    def _get_room_map(self):
+        room_map = {}
+
+        rooms = self._get('/resource/room')
+
+        for room in rooms:
+            room_id = room.get('id')
+            metadata = room.get('metadata', {})
+            children = room.get('children', [])
+
+            for child in children:
+                child_rid = child.get('rid')
+                if child_rid:
+                    room_map[child_rid] = {
+                        'id': room_id,
+                        'name': metadata.get('name', 'unknown')
+                    }
+
+        return room_map
 
 
     def check_bridge_connection(self):
@@ -103,7 +124,19 @@ class HueClient:
 
 
     def get_lights(self):
-        return []
+        raw_lights = self._get('/resource/light')
+        room_map = self._get_room_map()
+
+        lights = []
+
+        for raw_light in raw_lights:
+            owner = raw_light.get('owner', {})
+            owner_rid = owner.get('rid')
+            room_name = room_map.get(owner_rid, {}).get('name', 'unknown')
+
+            lights.append(self._map_light(raw_light, room_name=room_name))
+        
+        return lights
 
 
     def get_light_by_id(self, light_id: str):
@@ -189,11 +222,31 @@ class HueClient:
 
 
     def get_rooms(self):
-        return []
+        rooms = self._get('/resource/room')
+
+        items = []
+
+        for room in rooms:
+            metadata = room.get('metadata', {})
+            children = room.get('children', [])
+
+            items.append(
+                {
+                    'name': metadata.get('name', 'unknown'),
+                    'light_count': len(children)
+                }
+            )
+        
+        return items
 
 
     def get_lights_by_room(self, room_name: str):
-        return []
+        lights = self.get_lights()
+
+        return [
+            light for light in lights
+            if light['room'].lower() == room_name.lower()
+        ]
 
 
     def bulk_turn_on_lights(self, light_ids: list[str]):
