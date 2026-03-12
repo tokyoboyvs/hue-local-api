@@ -23,3 +23,9 @@ class HueClient:
 
     def set_color(self, light_id: str, color: str):
         return None
+    
+    def get_rooms(self):
+        return []
+    
+    def get_lights_by_room(self, room_name: str):
+        return []

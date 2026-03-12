@@ -68,3 +68,28 @@ class MockHueClient:
         
         light['color'] = color
         return light
+    
+    def get_rooms(self):
+        rooms = {}
+
+        for light in self.lights:
+            room_name = light['room']
+
+            if room_name not in rooms:
+                rooms[room_name] = 0
+            
+            rooms[room_name] += 1
+        
+        return [
+            {
+                'name': room_name,
+                'light_count': light_count
+            }
+            for room_name, light_count in rooms.items()
+        ]
+    
+    def get_lights_by_room(self, room_name: str):
+        return [
+            light for light in self.lights
+            if light['room'] == room_name
+        ]

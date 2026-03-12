@@ -1,4 +1,5 @@
 from app.routes.lights import router as lights_router
+from app.routes.rooms import router as rooms_router
 from app.models import HealthResponse
 from app.config import settings
 from fastapi import FastAPI
@@ -9,6 +10,7 @@ app = FastAPI(
 )
 
 app.include_router(lights_router, prefix='/api')
+app.include_router(rooms_router, prefix='/api')
 
 
 @app.get('/health', response_model=HealthResponse)

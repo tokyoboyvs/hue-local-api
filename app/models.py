@@ -40,3 +40,13 @@ class BrightnessUpdateRequest(BaseModel):
 
 class ColorUpdateRequest(BaseModel):
     color: Annotated[str, StringConstraints(pattern=r'^#[0-9A-Fa-f]{6}$')]
+
+
+class RoomModel(BaseModel):
+    name: str
+    light_count: int
+
+
+class RoomsListResponse(BaseModel):
+    mode: str
+    items: list[RoomModel]
