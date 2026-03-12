@@ -20,3 +20,6 @@ class HueClient:
     
     def set_brightness(self, light_id: str, brightness: int):
         return None
+
+    def set_color(self, light_id: str, color: str):
+        return None

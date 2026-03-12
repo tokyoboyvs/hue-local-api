@@ -1,4 +1,4 @@
-from app.models import BrightnessUpdateRequest, LightActionResponse, LightDetailsResponse, LightsListResponse
+from app.models import BrightnessUpdateRequest, ColorUpdateRequest, LightActionResponse, LightDetailsResponse, LightsListResponse
 from app.services.factory import get_hue_client
 from fastapi import APIRouter, HTTPException
 from app.config import settings
@@ -101,5 +101,23 @@ def set_light_brightness(light_id: str, payload: BrightnessUpdateRequest):
     return {
         'success': True,
         'message': f'Light \'{light_id}\' brightness set to {payload.brightness}',
+        'light': light
+    }
+
+
+@router.post('/{light_id}/color', response_model=LightActionResponse)
+def set_light_color(light_id: str, payload: ColorUpdateRequest):
+    client = get_hue_client()
+    light = client.set_color(light_id, payload.color)
+
+    if light is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f'Light \'{light_id}\' not found'
+        )
+    
+    return {
+        'success': True,
+        'message': f'Light \'{light_id}\' color set to {payload.color}',
         'light': light
     }

@@ -27,7 +27,7 @@ class MockHueClient:
             if light['id'] == light_id:
                 return light
             
-            return None
+        return None
     
     def turn_on_light(self, light_id: str):
         light = self.get_light_by_id(light_id)
@@ -59,4 +59,12 @@ class MockHueClient:
             return None
         
         light['brightness'] = brightness
+        return light
+    
+    def set_color(self, light_id: str, color: str):
+        light = self.get_light_by_id(light_id)
+        if light is None:
+            return None
+        
+        light['color'] = color
         return light

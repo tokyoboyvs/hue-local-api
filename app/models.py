@@ -1,4 +1,5 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, StringConstraints
+from typing import Annotated
 
 
 class LightModel(BaseModel):
@@ -7,7 +8,7 @@ class LightModel(BaseModel):
     room: str
     is_on: bool
     brightness: int = Field(ge=0, le=100)
-    color: str
+    color: Annotated[str, StringConstraints(pattern=r'^#[0-9A-Fa-f]{6}$')]
 
 
 class LightsListResponse(BaseModel):
@@ -35,3 +36,7 @@ class LightDetailsResponse(BaseModel):
 
 class BrightnessUpdateRequest(BaseModel):
     brightness: int = Field(ge= 0, le=100)
+
+
+class ColorUpdateRequest(BaseModel):
+    color: Annotated[str, StringConstraints(pattern=r'^#[0-9A-Fa-f]{6}$')]
