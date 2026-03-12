@@ -1,3 +1,4 @@
+from app.exceptions import HueBridgeAuthenticationError, HueBridgeConnectionError, HueBridgeNotConfiguredError, HueResourceNotFoundError
 from app.utils.color import hex_to_xy
 import httpx
 
@@ -22,7 +23,7 @@ class HueClient:
 # HTTP helpers
     def _get(self, path: str):
         if not self.is_configured():
-            return []
+            raise HueBridgeNotConfiguredError()
         
         try:
             response = httpx.get(
@@ -31,16 +32,30 @@ class HueClient:
                 timeout=5.0,
                 verify=False
             )
+
+            if response.status_code == 401:
+                raise HueBridgeAuthenticationError()
+            
+            if response.status_code == 404:
+                raise HueResourceNotFoundError()
+            
             response.raise_for_status()
             payload = response.json()
             return payload.get('data', [])
-        except (httpx.HTTPError, ValueError):
-            return []
+        
+        except httpx.TimeoutException as exc:
+            raise HueBridgeConnectionError() from exc
+        except httpx.HTTPStatusError as exc:
+            raise HueBridgeConnectionError() from exc
+        except httpx.HTTPError as exc:
+            raise HueBridgeConnectionError() from exc
+        except ValueError as exc:
+            raise HueBridgeConnectionError() from exc
     
 
     def _put(self, path: str, data: dict):
         if not self.is_configured():
-            return False
+            raise HueBridgeNotConfiguredError()
         
         try:
             response = httpx.put(
@@ -50,10 +65,22 @@ class HueClient:
                 timeout=5.0,
                 verify=False
             )
+
+            if response.status_code == 401:
+                raise HueBridgeAuthenticationError()
+            
+            if response.status_code == 404:
+                raise HueResourceNotFoundError()
+
             response.raise_for_status()
             return True
-        except httpx.HTTPError:
-            return False
+        
+        except httpx.TimeoutException as exc:
+            raise HueBridgeConnectionError() from exc
+        except httpx.HTTPStatusError as exc:
+            raise HueBridgeConnectionError() from exc
+        except httpx.HTTPError as exc:
+            raise HueBridgeConnectionError() from exc
     
 
 # Light mapping helpers
@@ -111,18 +138,15 @@ class HueClient:
 
 # Read operations
     def check_bridge_connection(self):
-        if not self.is_configured():
-            return False
-        
         try:
-            response = httpx.get(
-                f'{self.base_url}/resource/device',
-                headers=self.get_headers(),
-                timeout=5.0,
-                verify=False
-            )
-            return response.status_code == 200
-        except httpx.HTTPError:
+            self._get('/resource/device')
+            return True
+        except (
+            HueBridgeAuthenticationError,
+            HueBridgeConnectionError,
+            HueBridgeNotConfiguredError,
+            HueResourceNotFoundError
+        ):
             return False
 
 
@@ -143,6 +167,12 @@ class HueClient:
 
 
     def get_light_by_id(self, light_id: str):
+        lights = self.get_lights()
+
+        for light in lights:
+            if light['id'] == light_id:
+                return light
+            
         return None
 
 

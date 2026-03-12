@@ -1,9 +1,26 @@
 from app.models import BridgeStatusResponse, BrightnessUpdateRequest, BulkLightActionRequest, BulkLightActionResponse, ColorUpdateRequest, LightActionResponse, LightDetailsResponse, LightsListResponse
+from app.exceptions import HueBridgeAuthenticationError, HueBridgeConnectionError, HueBridgeNotConfiguredError, HueResourceNotFoundError
 from app.services.factory import get_hue_client
 from fastapi import APIRouter, HTTPException
 from app.config import settings
 
 router = APIRouter(prefix='/lights', tags=['lights'])
+
+
+def handle_hue_error(exc: Exception):
+    if isinstance(exc, HueBridgeNotConfiguredError):
+        raise HTTPException(status_code=500, detail='Hue Bridge is not configured')
+    
+    if isinstance(exc, HueBridgeAuthenticationError):
+        raise HTTPException(status_code=502, detail='Hue Bridge authentication failed')
+    
+    if isinstance(exc, HueBridgeConnectionError):
+        raise HTTPException(status_code=502, detail='Hue Bridge is unreachable')
+    
+    if isinstance(exc, HueResourceNotFoundError):
+        raise HTTPException(status_code=404, detail='Hue resource not found')
+    
+    raise exc
 
 
 @router.get('/bridge/status', response_model=BridgeStatusResponse)
@@ -17,21 +34,37 @@ def get_bridge_status():
             'bridge_reachable': False
         }
     
-    return {
-        'mode': settings.APP_MODE,
-        'bridge_configured': client.is_configured(),
-        'bridge_reachable': client.check_bridge_connection()
-    }
+    try:
+        return {
+            'mode': settings.APP_MODE,
+            'bridge_configured': client.is_configured(),
+            'bridge_reachable': client.check_bridge_connection()
+        }
+    except (
+        HueBridgeAuthenticationError,
+        HueBridgeConnectionError,
+        HueBridgeNotConfiguredError,
+        HueResourceNotFoundError
+    ) as exc:
+        handle_hue_error(exc)
 
 
 @router.get('', response_model=LightsListResponse)
 def get_lights():
     client = get_hue_client()
 
-    return {
-        'mode': settings.APP_MODE,
-        'items': client.get_lights()
-    }
+    try:
+        return {
+            'mode': settings.APP_MODE,
+            'items': client.get_lights()
+        }
+    except (
+        HueBridgeAuthenticationError,
+        HueBridgeConnectionError,
+        HueBridgeNotConfiguredError,
+        HueResourceNotFoundError
+    ) as exc:
+        handle_hue_error(exc)
 
 
 @router.post('/actions/on', response_model=BulkLightActionResponse)
@@ -76,7 +109,16 @@ def bulk_toggle_lights(payload: BulkLightActionRequest):
 @router.get('/{light_id}', response_model=LightDetailsResponse)
 def get_light(light_id: str):
     client = get_hue_client()
-    light = client.get_light_by_id(light_id)
+
+    try:
+        light = client.get_light_by_id(light_id)
+    except (
+        HueBridgeAuthenticationError,
+        HueBridgeConnectionError,
+        HueBridgeNotConfiguredError,
+        HueResourceNotFoundError
+    ) as exc:
+        handle_hue_error(exc)
 
     if light is None:
         raise HTTPException(
@@ -93,7 +135,16 @@ def get_light(light_id: str):
 @router.post('/{light_id}/on', response_model=LightActionResponse)
 def turn_on_light(light_id: str):
     client = get_hue_client()
-    light = client.turn_on_light(light_id)
+
+    try:
+        light = client.turn_on_light(light_id)
+    except (
+        HueBridgeAuthenticationError,
+        HueBridgeConnectionError,
+        HueBridgeNotConfiguredError,
+        HueResourceNotFoundError
+    ) as exc:
+        handle_hue_error(exc)
 
     if light is None:
         raise HTTPException(
@@ -111,7 +162,16 @@ def turn_on_light(light_id: str):
 @router.post('/{light_id}/off', response_model=LightActionResponse)
 def turn_off_light(light_id: str):
     client = get_hue_client()
-    light = client.turn_off_light(light_id)
+
+    try:
+        light = client.turn_off_light(light_id)
+    except (
+        HueBridgeAuthenticationError,
+        HueBridgeConnectionError,
+        HueBridgeNotConfiguredError,
+        HueResourceNotFoundError
+    ) as exc:
+        handle_hue_error(exc)
 
     if light is None:
         raise HTTPException(
@@ -129,7 +189,16 @@ def turn_off_light(light_id: str):
 @router.post('/{light_id}/toggle', response_model=LightActionResponse)
 def toggle_light(light_id: str):
     client = get_hue_client()
-    light = client.toggle_light(light_id)
+
+    try:
+        light = client.toggle_light(light_id)
+    except (
+        HueBridgeAuthenticationError,
+        HueBridgeConnectionError,
+        HueBridgeNotConfiguredError,
+        HueResourceNotFoundError
+    ) as exc:
+        handle_hue_error(exc)
 
     if light is None:
         raise HTTPException(
@@ -147,7 +216,16 @@ def toggle_light(light_id: str):
 @router.post('/{light_id}/brightness', response_model=LightActionResponse)
 def set_light_brightness(light_id: str, payload: BrightnessUpdateRequest):
     client = get_hue_client()
-    light = client.set_brightness(light_id, payload.brightness)
+
+    try: 
+        light = client.set_brightness(light_id, payload.brightness)
+    except (
+        HueBridgeAuthenticationError,
+        HueBridgeConnectionError,
+        HueBridgeNotConfiguredError,
+        HueResourceNotFoundError
+    ) as exc:
+        handle_hue_error(exc)
 
     if light is None:
         raise HTTPException(
@@ -165,7 +243,16 @@ def set_light_brightness(light_id: str, payload: BrightnessUpdateRequest):
 @router.post('/{light_id}/color', response_model=LightActionResponse)
 def set_light_color(light_id: str, payload: ColorUpdateRequest):
     client = get_hue_client()
-    light = client.set_color(light_id, payload.color)
+    
+    try:
+        light = client.set_color(light_id, payload.color)
+    except (
+        HueBridgeAuthenticationError,
+        HueBridgeConnectionError,
+        HueBridgeNotConfiguredError,
+        HueResourceNotFoundError
+    ) as exc:
+        handle_hue_error(exc)
 
     if light is None:
         raise HTTPException(

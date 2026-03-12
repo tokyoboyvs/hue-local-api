@@ -1,19 +1,19 @@
 # hue-local-api
 
-Mini API REST en Python avec FastAPI pour piloter des lumières Philips Hue.
+Mini API REST en Python avec FastAPI pour piloter des lumieres Philips Hue.
 
 ## Features
 
 - health check
-- liste des lumières
-- détail d'une lumière
+- liste des lumieres
+- detail d'une lumiere
 - on / off / toggle
-- mise à jour de la luminosité
-- mise à jour de la couleur
+- mise a jour de la luminosite
+- mise a jour de la couleur
 - liste des rooms
-- liste des lumières par room
+- liste des lumieres par room
 - mode mock
-- protection API par clé
+- protection API par cle
 
 ## Stack
 
@@ -40,14 +40,20 @@ requirements.txt
 
 - `APP_MODE`: mode de l'application, `mock` ou `real`
 - `HUE_BRIDGE_IP`: adresse IP du Hue Bridge
-- `HUE_APP_KEY`: clé d'application du Hue Bridge
-- `API_KEY`: clé attendue dans le header `X-API-Key`
+- `HUE_APP_KEY`: cle d'application du Hue Bridge
+- `API_KEY`: cle attendue dans le header `X-API-Key`
+- `APP_HOST`: host d'ecoute Uvicorn
+- `APP_PORT`: port d'ecoute Uvicorn
+- `APP_RELOAD`: active ou non le reload automatique
 
 ```env
 APP_MODE=mock
 HUE_BRIDGE_IP=
 HUE_APP_KEY=
 API_KEY=dev-key
+APP_HOST=127.0.0.1
+APP_PORT=8000
+APP_RELOAD=true
 ```
 
 ## Run locally
@@ -86,11 +92,11 @@ curl -X GET "http://127.0.0.1:8000/api/lights" -H "accept: application/json" -H 
 ## Example payloads
 
 ```json
-{ "brightness": 20 }
+{"brightness": 20}
 ```
 
 ```json
-{ "color": "#00FFAA" }
+{"color": "#00FFAA"}
 ```
 
 ## Tests
@@ -103,11 +109,24 @@ pytest
 
 Le mode mock est fonctionnel.
 
-Le client réel Hue est préparé, mais l'intégration complète avec un vrai Hue Bridge reste à finaliser.
+Le client reel Hue est prepare, mais l'integration complete avec un vrai Hue Bridge reste a finaliser.
+
+## Raspberry Pi notes
+
+- utiliser `APP_RELOAD=false`
+- exposer l'API sur `0.0.0.0`
+- garder une IP locale stable pour le Raspberry Pi
+- utiliser Docker ou un service systemd plus tard
+
+```env
+APP_HOST=0.0.0.0
+APP_PORT=8000
+APP_RELOAD=false
+```
 
 ## Next steps
 
-- intégration réelle du Hue Bridge
-- actions groupées
-- gestion avancée des rooms
-- refactor du service layer si nécessaire
+- integration reelle du Hue Bridge
+- actions groupees
+- gestion avancee des rooms
+- refactor du service layer si necessaire
