@@ -36,6 +36,24 @@ class HueClient:
             return []
     
 
+    def _put(self, path: str, data: dict):
+        if not self.is_configured():
+            return False
+        
+        try:
+            response = httpx.put(
+                f'{self.base_url}{path}',
+                headers=self.get_headers(),
+                json=data,
+                timeout=5.0,
+                verify=False
+            )
+            response.raise_for_status()
+            return True
+        except httpx.HTTPError:
+            return False
+    
+
     def _extract_brightness(self, raw_light: dict):
         dimming = raw_light.get('dimming')
         if not dimming:
@@ -92,15 +110,40 @@ class HueClient:
 
 
     def turn_on_light(self, light_id: str):
-        return None
+        light = self.get_light_by_id(light_id)
+        if light is None:
+            return None
+        
+        success = self._put(f'/resource/light/{light_id}', {'on': {'on': True}})
+        if not success:
+            return None
+        
+        light['is_on'] = True
+        return light
 
 
     def turn_off_light(self, light_id: str):
-        return None
+        light = self.get_light_by_id(light_id)
+        if light is None:
+            return None
+        
+        success = self._put(f'/resource/light/{light_id}', {'on': {'on': False}})
+        if not success:
+            return None
+        
+        light['is_on'] = False
+        return light
 
 
     def toggle_light(self, light_id: str):
-        return None
+        light = self.get_light_by_id(light_id)
+        if light is None:
+            return None
+        
+        if light['is_on']:
+            return self.turn_off_light(light_id)
+        
+        return self.turn_on_light(light_id)
 
 
     def set_brightness(self, light_id: str, brightness: int):
