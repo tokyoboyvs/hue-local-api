@@ -168,12 +168,6 @@ def set_light_color(light_id: str, payload: ColorUpdateRequest):
     light = client.set_color(light_id, payload.color)
 
     if light is None:
-        if settings.APP_MODE == 'real':
-            raise HTTPException(
-                status_code=501,
-                detail='Real Hue color update is not implemented yet'
-            )
-        
         raise HTTPException(
             status_code=404,
             detail=f'Light \'{light_id}\' not found'

@@ -1,3 +1,4 @@
+from app.utils.color import hex_to_xy
 import httpx
 
 
@@ -163,7 +164,28 @@ class HueClient:
 
 
     def set_color(self, light_id: str, color: str):
-        return None
+        light = self.get_light_by_id(light_id)
+        if light is None:
+            return None
+        
+        x, y = hex_to_xy(color)
+
+        success = self._put(
+            f'/resource/light/{light_id}',
+            {
+                'color': {
+                    'xy': {
+                        'x': x,
+                        'y': y
+                    }
+                }
+            }
+        )
+        if not success:
+            return None
+
+        light['color'] = color
+        return light
 
 
     def get_rooms(self):
