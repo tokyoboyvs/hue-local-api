@@ -31,3 +31,7 @@ class LightActionResponse(BaseModel):
 class LightDetailsResponse(BaseModel):
     mode: str
     item: LightModel
+
+
+class BrightnessUpdateRequest(BaseModel):
+    brightness: int = Field(ge= 0, le=100)
