@@ -56,3 +56,14 @@ class BridgeStatusResponse(BaseModel):
     mode: str
     bridge_configured: bool
     bridge_reachable: bool
+
+
+class BulkLightActionRequest(BaseModel):
+    light_ids: Annotated[list[str], Field(min_length=1)]
+
+
+class BulkLightActionResponse(BaseModel):
+    success: bool
+    message: str
+    updated_lights: list[LightModel]
+    missing_light_ids: list[str]

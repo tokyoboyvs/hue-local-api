@@ -1,9 +1,27 @@
-from app.models import BridgeStatusResponse, BrightnessUpdateRequest, ColorUpdateRequest, LightActionResponse, LightDetailsResponse, LightsListResponse
+from app.models import BridgeStatusResponse, BrightnessUpdateRequest, BulkLightActionRequest, BulkLightActionResponse, ColorUpdateRequest, LightActionResponse, LightDetailsResponse, LightsListResponse
 from app.services.factory import get_hue_client
 from fastapi import APIRouter, HTTPException
 from app.config import settings
 
 router = APIRouter(prefix='/lights', tags=['lights'])
+
+
+@router.get('/bridge/status', response_model=BridgeStatusResponse)
+def get_bridge_status():
+    client = get_hue_client()
+
+    if settings.APP_MODE == 'mock':
+        return {
+            'mode': settings.APP_MODE,
+            'bridge_configured': False,
+            'bridge_reachable': False
+        }
+    
+    return {
+        'mode': settings.APP_MODE,
+        'bridge_configured': client.is_configured(),
+        'bridge_reachable': client.check_bridge_connection()
+    }
 
 
 @router.get('', response_model=LightsListResponse)
@@ -13,6 +31,45 @@ def get_lights():
     return {
         'mode': settings.APP_MODE,
         'items': client.get_lights()
+    }
+
+
+@router.post('/actions/on', response_model=BulkLightActionResponse)
+def bulk_turn_on_lights(payload: BulkLightActionRequest):
+    client = get_hue_client()
+    updated_lights, missing_light_ids = client.bulk_turn_on_lights(payload.light_ids)
+
+    return {
+        'success': True,
+        'message': 'Bulk on action executed',
+        'updated_lights': updated_lights,
+        'missing_light_ids': missing_light_ids
+    }
+
+
+@router.post('/actions/off', response_model=BulkLightActionResponse)
+def bulk_turn_off_lights(payload: BulkLightActionRequest):
+    client = get_hue_client()
+    updated_lights, missing_light_ids = client.bulk_turn_off_lights(payload.light_ids)
+
+    return {
+        'success': True,
+        'message': 'Bulk off action executed',
+        'updated_lights': updated_lights,
+        'missing_light_ids': missing_light_ids
+    }
+
+
+@router.post('/actions/toggle', response_model=BulkLightActionResponse)
+def bulk_toggle_lights(payload: BulkLightActionRequest):
+    client = get_hue_client()
+    updated_lights, missing_light_ids = client.bulk_toggle_lights(payload.light_ids)
+
+    return {
+        'success': True,
+        'message': 'Bulk toggle action executed',
+        'updated_lights': updated_lights,
+        'missing_light_ids': missing_light_ids
     }
 
 
@@ -120,22 +177,4 @@ def set_light_color(light_id: str, payload: ColorUpdateRequest):
         'success': True,
         'message': f'Light \'{light_id}\' color set to {payload.color}',
         'light': light
-    }
-
-
-@router.get('/bridge/status', response_model=BridgeStatusResponse)
-def get_bridge_status():
-    client = get_hue_client()
-
-    if settings.APP_MODE == 'mock':
-        return {
-            'mode': settings.APP_MODE,
-            'bridge_configured': False,
-            'bridge_reachable': False
-        }
-    
-    return {
-        'mode': settings.APP_MODE,
-        'bridge_configured': client.is_configured(),
-        'bridge_reachable': client.check_bridge_connection()
     }
