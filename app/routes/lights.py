@@ -1,4 +1,4 @@
-from app.models import BrightnessUpdateRequest, ColorUpdateRequest, LightActionResponse, LightDetailsResponse, LightsListResponse
+from app.models import BridgeStatusResponse, BrightnessUpdateRequest, ColorUpdateRequest, LightActionResponse, LightDetailsResponse, LightsListResponse
 from app.services.factory import get_hue_client
 from fastapi import APIRouter, HTTPException
 from app.config import settings
@@ -120,4 +120,22 @@ def set_light_color(light_id: str, payload: ColorUpdateRequest):
         'success': True,
         'message': f'Light \'{light_id}\' color set to {payload.color}',
         'light': light
+    }
+
+
+@router.get('/bridge/status', response_model=BridgeStatusResponse)
+def get_bridge_status():
+    client = get_hue_client()
+
+    if settings.APP_MODE == 'mock':
+        return {
+            'mode': settings.APP_MODE,
+            'bridge_configured': False,
+            'bridge_reachable': False
+        }
+    
+    return {
+        'mode': settings.APP_MODE,
+        'bridge_configured': client.is_configured(),
+        'bridge_reachable': client.check_bridge_connection()
     }

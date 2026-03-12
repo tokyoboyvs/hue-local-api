@@ -50,3 +50,9 @@ class RoomModel(BaseModel):
 class RoomsListResponse(BaseModel):
     mode: str
     items: list[RoomModel]
+
+
+class BridgeStatusResponse(BaseModel):
+    mode: str
+    bridge_configured: bool
+    bridge_reachable: bool

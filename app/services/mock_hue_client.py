@@ -93,3 +93,9 @@ class MockHueClient:
             light for light in self.lights
             if light['room'] == room_name
         ]
+    
+    def is_configured(self):
+        return False
+
+    def check_bridge_connection(self):
+        return False

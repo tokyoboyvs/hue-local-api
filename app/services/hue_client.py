@@ -1,7 +1,34 @@
+import httpx
+
+
 class HueClient:
     def __init__(self, bridge_ip: str, app_key: str):
         self.bridge_ip = bridge_ip
         self.app_key = app_key
+        self.base_url = f'https://{bridge_ip}/clip/v2' if bridge_ip else ''
+
+    def is_configured(self):
+        return bool(self.bridge_ip and self.app_key)
+    
+    def get_headers(self):
+        return {
+            'hue-application-key': self.app_key
+        }
+    
+    def check_bridge_connection(self):
+        if not self.is_configured():
+            return False
+        
+        try:
+            response = httpx.get(
+                f'{self.base_url}/resource/device',
+                headers=self.get_headers(),
+                timeout=5.0,
+                verify=False
+            )
+            return response.status_code == 200
+        except httpx.HTTPError:
+            return False
     
     def get_lights(self):
         return []
