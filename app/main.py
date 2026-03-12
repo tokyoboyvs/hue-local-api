@@ -1,4 +1,5 @@
 from app.routes.lights import router as lights_router
+from app.models import HealthResponse
 from app.config import settings
 from fastapi import FastAPI
 
@@ -9,7 +10,7 @@ app = FastAPI(
 
 app.include_router(lights_router, prefix='/api')
 
-@app.get('/health')
+@app.get('/health', response_model=HealthResponse)
 def health():
     return {
         'status': 'ok',
