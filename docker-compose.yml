@@ -6,7 +6,7 @@ services:
       - "8000:8000"
     environment:
       APP_MODE: mock
-      API_KEY: dev-API_KEY
+      API_KEY: D83G32sKsKGJWfnFkbGF3uOodMJzABROpmLst25KJxxdQxM3mIuac62BQp6XJ7UaiSi3tONWxrBkqjdwHsPGrU967dG2JUEDh012Kv0CPYVzDaZmYExH96BoeFzlouatVfSDdnMceuX4kPdIO7ldHGYjyvur0rM88nq8nEDHqeFTRTCENLfnRHaHLENy2a2XSA2OBHZbn9Qlwpc06FLTAWacfiWMN3l8Huu5AVHAloJIJDqVG9irafvjqPWHEMog
       APP_HOST: 0.0.0.0
       APP_PORT: 8000
       APP_RELOAD: "false"

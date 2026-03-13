@@ -1,6 +1,8 @@
 from app.routes.lights import router as lights_router
 from app.routes.rooms import router as rooms_router
 from app.dependencies import require_api_key
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from app.models import HealthResponse
 from fastapi import Depends, FastAPI
 from app.config import settings
@@ -20,6 +22,16 @@ app.include_router(
     prefix='/api',
     dependencies=[Depends(require_api_key)]
 )
+app.mount(
+    '/static',
+    StaticFiles(directory='app/static'),
+    name='static'
+)
+
+
+@app.get('/ui')
+def ui():
+    return FileResponse('app/static/index.html')
 
 
 @app.get('/health', response_model=HealthResponse)

@@ -92,11 +92,11 @@ curl -X GET "http://127.0.0.1:8000/api/lights" -H "accept: application/json" -H 
 ## Example payloads
 
 ```json
-{"brightness": 20}
+{ "brightness": 20 }
 ```
 
 ```json
-{"color": "#00FFAA"}
+{ "color": "#00FFAA" }
 ```
 
 ## Tests
