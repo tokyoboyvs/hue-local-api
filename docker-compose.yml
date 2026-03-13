@@ -1,0 +1,12 @@
+services:
+  hue-local-api:
+    build: .
+    container_name: hue-local-api
+    ports:
+      - "8000:8000"
+    environment:
+      APP_MODE: mock
+      API_KEY: dev-API_KEY
+      APP_HOST: 0.0.0.0
+      APP_PORT: 8000
+      APP_RELOAD: "false"
