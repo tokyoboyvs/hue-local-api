@@ -95,3 +95,18 @@ button:hover {
 .actions button {
   margin-top: 0;
 }
+
+.color-group {
+  margin-top: 18px;
+  display: grid;
+  gap: 10px;
+}
+
+#brightness-value {
+  font-weight: 600;
+}
+
+input[type="color"] {
+  height: 48px;
+  padding: 6px;
+}

@@ -15,6 +15,12 @@ const turnOnButton = document.getElementById("turn-on-btn");
 const turnOffButton = document.getElementById("turn-off-btn");
 const toggleButton = document.getElementById("toggle-btn");
 
+const brightnessRange = document.getElementById("brightness-range");
+const brightnessValue = document.getElementById("brightness-value");
+const applyBrightnessButton = document.getElementById("apply-brightness-btn");
+const colorPicker = document.getElementById("color-picker");
+const applyColorButton = document.getElementById("apply-color-btn");
+
 const getHeaders = () => {
   return {
     accept: "application/json",
@@ -37,6 +43,11 @@ const renderLight = (light) => {
   lightPower.textContent = light.is_on ? "on" : "off";
   lightBrightness.textContent = `${light.brightness}%`;
   lightColor.textContent = light.color;
+
+  brightnessRange.value = light.brightness;
+  brightnessValue.textContent = `${light.brightness}%`;
+  colorPicker.value = light.color;
+
   statusCard.classList.remove("hidden");
 };
 
@@ -130,10 +141,87 @@ const runLightAction = async (action) => {
   }
 };
 
-apiKeyInput.addEventListener("change", loadLights);
+const updateBrightness = async () => {
+  clearFeedback();
+
+  const selectedLightId = getSelectedLightId();
+
+  if (!selectedLightId) {
+    setFeedback("Select a light first");
+    return;
+  }
+
+  try {
+    const response = await fetch(`/api/lights/${selectedLightId}/brightness`, {
+      method: "POST",
+      headers: {
+        ...getHeaders(),
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        brightness: Number(brightnessRange.value),
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      setFeedback(data.detail || "Unable to update light brightness");
+      return;
+    }
+
+    renderLight(data.light);
+  } catch {
+    setFeedback("Unable to reach API");
+  }
+};
+
+const updateColor = async () => {
+  clearFeedback();
+
+  const selectedLightId = getSelectedLightId();
+
+  if (!selectedLightId) {
+    setFeedback("Select a light first");
+    return;
+  }
+
+  try {
+    const response = await fetch(`/api/lights/${selectedLightId}/color`, {
+      method: "POST",
+      headers: {
+        ...getHeaders(),
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        color: colorPicker.value,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      setFeedback(data.detail || "Unable to update color");
+      return;
+    }
+
+    renderLight(data.light);
+  } catch {
+    setFeedback("Unable to reach API");
+  }
+};
+
+apiKeyInput.addEventListener("input", loadLights);
 loadLightButton.addEventListener("click", loadSelectedLight);
 turnOnButton.addEventListener("click", () => runLightAction("on"));
 turnOffButton.addEventListener("click", () => runLightAction("off"));
 toggleButton.addEventListener("click", () => runLightAction("toggle"));
+
+brightnessRange.addEventListener("input", () => {
+  brightnessValue.textContent = `${brightnessRange.value}%`;
+});
+
+applyBrightnessButton.addEventListener("click", updateBrightness);
+applyColorButton.addEventListener("click", updateColor);
 
 loadLights();

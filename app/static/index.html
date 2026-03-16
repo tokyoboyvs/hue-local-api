@@ -53,6 +53,19 @@
             <button id="turn-off-btn" type="button">Turn off</button>
             <button id="toggle-btn" type="button">Toggle</button>
           </div>
+
+          <div class="control-group">
+            <label for="brightness-range">Brightness</label>
+            <input id="brightness-range" type="range" min="0" max="100" value="50" />
+            <span id="brightness-value">0%</span>
+            <button id="apply-brightness-btn" type="button">Apply brightness</button>
+          </div>
+
+          <div class="control-group">
+            <label for="color-picker">Color</label>
+            <input id="color-picker" type="color" value="#FFFFFF" />
+            <button id="apply-color-btn" type="button">Apply color</button>
+          </div>
         </div>
 
         <p id="feedback" class="feedback"></p>
