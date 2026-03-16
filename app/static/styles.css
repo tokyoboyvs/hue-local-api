@@ -84,3 +84,14 @@ button:hover {
 .hidden {
   display: none;
 }
+
+.actions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.actions button {
+  margin-top: 0;
+}

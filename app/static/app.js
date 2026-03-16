@@ -11,6 +11,10 @@ const lightPower = document.getElementById("light-power");
 const lightBrightness = document.getElementById("light-brightness");
 const lightColor = document.getElementById("light-color");
 
+const turnOnButton = document.getElementById("turn-on-btn");
+const turnOffButton = document.getElementById("turn-off-btn");
+const toggleButton = document.getElementById("toggle-btn");
+
 const getHeaders = () => {
   return {
     accept: "application/json",
@@ -34,6 +38,10 @@ const renderLight = (light) => {
   lightBrightness.textContent = `${light.brightness}%`;
   lightColor.textContent = light.color;
   statusCard.classList.remove("hidden");
+};
+
+const getSelectedLightId = () => {
+  return lightSelect.value;
 };
 
 const loadLights = async () => {
@@ -93,7 +101,39 @@ const loadSelectedLight = async () => {
   }
 };
 
+const runLightAction = async (action) => {
+  clearFeedback();
+
+  const selectedLightId = getSelectedLightId();
+
+  if (!selectedLightId) {
+    setFeedback("Select a light first");
+    return;
+  }
+
+  try {
+    const response = await fetch(`/api/lights/${selectedLightId}/${action}`, {
+      method: "POST",
+      headers: getHeaders(),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      setFeedback(data.detail || `Unable to ${action} light`);
+      return;
+    }
+
+    renderLight(data.light);
+  } catch {
+    setFeedback("Unable to reach API");
+  }
+};
+
 apiKeyInput.addEventListener("change", loadLights);
 loadLightButton.addEventListener("click", loadSelectedLight);
+turnOnButton.addEventListener("click", () => runLightAction("on"));
+turnOffButton.addEventListener("click", () => runLightAction("off"));
+toggleButton.addEventListener("click", () => runLightAction("toggle"));
 
 loadLights();
