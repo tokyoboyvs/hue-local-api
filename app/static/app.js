@@ -20,6 +20,9 @@ const turnOnButton = document.getElementById("turn-on-btn");
 const turnOffButton = document.getElementById("turn-off-btn");
 const toggleButton = document.getElementById("toggle-btn");
 
+const selectAllBulkButton = document.getElementById("select-all-bulk-btn");
+const clearBulkButton = document.getElementById("clear-bulk-btn");
+
 const bulkLightSelect = document.getElementById("bulk-light-select");
 const bulkOnButton = document.getElementById("bulk-on-btn");
 const bulkOffButton = document.getElementById("bulk-off-btn");
@@ -91,6 +94,22 @@ const getSelectedLightId = () => {
 
 const getSelectedLightIds = () => {
   return Array.from(bulkLightSelect.selectedOptions).map((option) => option.value);
+};
+
+const selectAllBulkLights = () => {
+  for (const option of bulkLightSelect.options) {
+    option.selected = true;
+  }
+
+  setFeedback("All visible lights selected", "success");
+};
+
+const clearBulkSelection = () => {
+  for (const option of bulkLightSelect.options) {
+    option.selected = false;
+  }
+
+  setFeedback("Bulk selection cleared", "neutral");
 };
 
 const hideLightDetails = () => {
@@ -414,6 +433,9 @@ refreshUiButton.addEventListener("click", refreshUi);
 turnOnButton.addEventListener("click", () => runLightAction("on"));
 turnOffButton.addEventListener("click", () => runLightAction("off"));
 toggleButton.addEventListener("click", () => runLightAction("toggle"));
+
+selectAllBulkButton.addEventListener("click", selectAllBulkLights);
+clearBulkButton.addEventListener("click", clearBulkSelection);
 
 bulkOnButton.addEventListener("click", () => runBulkLightAction("on"));
 bulkOffButton.addEventListener("click", () => runBulkLightAction("off"));
