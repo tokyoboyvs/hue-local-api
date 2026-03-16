@@ -127,6 +127,14 @@ const resetRoomFilter = async () => {
 
 const hideLightDetails = () => {
   statusCard.classList.add("hidden");
+  lightId.textContent = "";
+  lightName.textContent = "";
+  lightRoom.textContent = "";
+  lightPower.textContent = "";
+  lightPower.className = "power-badge";
+  lightBrightness.textContent = "";
+  lightColor.textContent = "";
+  lightColorPreview.style.backgroundColor = "transparent";
 };
 
 const loadLights = async () => {
@@ -152,8 +160,9 @@ const loadLights = async () => {
 
     lightSelect.innerHTML = '<option value="">Select a light</option>';
     bulkLightSelect.innerHTML = "";
+    lightSelect.value = "";
 
-    const currentSelectedLightId = lightId.textContent;
+    const currentSelectedLightId = getSelectedLightId() || lightId.textContent;
     let selectedLightStillVisible = false;
 
     for (const light of data.items) {
@@ -183,6 +192,10 @@ const loadLights = async () => {
     }
 
     if (currentSelectedLightId && !selectedLightStillVisible) {
+      hideLightDetails();
+    }
+
+    if (data.items.length === 0) {
       hideLightDetails();
     }
   } catch {
@@ -228,7 +241,7 @@ const loadRoomsAndLights = async () => {
 const refreshUi = async () => {
   clearFeedback();
 
-  const currentSelectedLightId = lightId.textContent;
+  const currentSelectedLightId = getSelectedLightId() || lightId.textContent;
 
   await loadRooms();
   await loadLights();
