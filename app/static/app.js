@@ -3,6 +3,7 @@ const API_KEY_STORAGE_KEY = "hue-local-api-key";
 const apiKeyInput = document.getElementById("api-key");
 const lightSelect = document.getElementById("light-select");
 const roomSelect = document.getElementById("room-select");
+const resetRoomFilterButton = document.getElementById("reset-room-filter-btn");
 const loadLightButton = document.getElementById("load-light-btn");
 const refreshUiButton = document.getElementById("refresh-ui-btn");
 const statusCard = document.getElementById("status-card");
@@ -110,6 +111,18 @@ const clearBulkSelection = () => {
   }
 
   setFeedback("Bulk selection cleared", "neutral");
+};
+
+const resetRoomFilter = async () => {
+  roomSelect.value = "";
+  await loadLights();
+
+  if (!lightSelect.value) {
+    await loadSelectedLight();
+  } else {
+    hideLightDetails();
+    setFeedback("Room filter cleared", "neutral");
+  }
 };
 
 const hideLightDetails = () => {
@@ -426,6 +439,8 @@ roomSelect.addEventListener("change", async () => {
     await loadSelectedLight();
   }
 });
+
+resetRoomFilterButton.addEventListener("click", resetRoomFilter);
 
 loadLightButton.addEventListener("click", loadSelectedLight);
 refreshUiButton.addEventListener("click", refreshUi);
