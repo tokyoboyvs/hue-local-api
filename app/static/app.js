@@ -92,6 +92,10 @@ const getSelectedLightIds = () => {
   return Array.from(bulkLightSelect.selectedOptions).map((option) => option.value);
 };
 
+const hideLightDetails = () => {
+  statusCard.classList.add("hidden");
+};
+
 const loadLights = async () => {
   clearFeedback();
 
@@ -108,11 +112,16 @@ const loadLights = async () => {
     if (!response.ok) {
       setFeedback(data.detail || "Unable to load lights", "error");
       lightSelect.innerHTML = '<option value="">No lights available</option>';
+      bulkLightSelect.innerHTML = "";
+      hideLightDetails();
       return;
     }
 
     lightSelect.innerHTML = '<option value="">Select a light</option>';
     bulkLightSelect.innerHTML = "";
+
+    const currentSelectedLightId = lightId.textContent;
+    let selectedLightStillVisible = false;
 
     for (const light of data.items) {
       const option = document.createElement("option");
@@ -124,12 +133,20 @@ const loadLights = async () => {
       bulkOption.value = light.id;
       bulkOption.textContent = `${light.name} (${light.room})`;
       bulkLightSelect.appendChild(bulkOption);
+
+      if (light.id === currentSelectedLightId) {
+        selectedLightStillVisible = true;
+      }
     }
 
     if (data.items.length > 0) {
       setFeedback(`${data.items.length} light(s) loaded`, "success");
     } else {
       setFeedback("No lights available", "neutral");
+    }
+
+    if (currentSelectedLightId && !selectedLightStillVisible) {
+      hideLightDetails();
     }
   } catch {
     setFeedback("Unable to reach API", "error");
@@ -334,6 +351,12 @@ const runBulkLightAction = async (action) => {
     }
 
     await loadLights();
+
+    const selectedLightId = getSelectedLightId();
+
+    if (selectedLightId) {
+      await loadSelectedLight();
+    }
   } catch {
     setFeedback("Unable to reach API", "error");
   }
@@ -347,7 +370,16 @@ apiKeyInput.addEventListener("input", () => {
 apiKeyInput.addEventListener("change", saveApiKey);
 apiKeyInput.addEventListener("blur", saveApiKey);
 
-roomSelect.addEventListener("change", loadLights);
+roomSelect.addEventListener("change", async () => {
+  await loadLights();
+
+  const selectedLightId = getSelectedLightId();
+
+  if (selectedLightId) {
+    await loadSelectedLight();
+  }
+});
+
 loadLightButton.addEventListener("click", loadSelectedLight);
 
 turnOnButton.addEventListener("click", () => runLightAction("on"));
