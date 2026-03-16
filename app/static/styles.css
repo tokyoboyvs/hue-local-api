@@ -78,6 +78,18 @@ button:hover {
 .feedback {
   margin-top: 16px;
   min-height: 24px;
+  font-weight: 600;
+}
+
+.feedback-neutral {
+  color: #475467;
+}
+
+.feedback-success {
+  color: #027a48;
+}
+
+.feedback-error {
   color: #b42318;
 }
 
@@ -96,7 +108,7 @@ button:hover {
   margin-top: 0;
 }
 
-.color-group {
+.control-group {
   margin-top: 18px;
   display: grid;
   gap: 10px;

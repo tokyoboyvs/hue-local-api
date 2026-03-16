@@ -36,19 +36,21 @@ const getHeaders = () => {
   };
 };
 
-const setFeedback = (message) => {
+const setFeedback = (message, type = "neutral") => {
   feedback.textContent = message;
+  feedback.className = `feedback feedback-${type}`;
 };
 
 const clearFeedback = () => {
   feedback.textContent = "";
+  feedback.className = "feedback feedback-neutral";
 };
 
 const saveApiKey = () => {
   try {
     localStorage.setItem(API_KEY_STORAGE_KEY, apiKeyInput.value.trim());
   } catch {
-    setFeedback("Unable to save API key in browser storage");
+    setFeedback("Unable to save API key in browser storage", "error");
   }
 };
 
@@ -60,7 +62,7 @@ const loadSavedApiKey = () => {
       apiKeyInput.value = savedApiKey;
     }
   } catch {
-    setFeedback("Unable to read API key from browser storage");
+    setFeedback("Unable to read API key from browser storage", "error");
   }
 };
 
@@ -101,7 +103,7 @@ const loadLights = async () => {
     const data = await response.json();
 
     if (!response.ok) {
-      setFeedback(data.detail || "Unable to load lights");
+      setFeedback(data.detail || "Unable to load lights", "error");
       lightSelect.innerHTML = '<option value="">No lights available</option>';
       return;
     }
@@ -120,8 +122,14 @@ const loadLights = async () => {
       bulkOption.textContent = `${light.name} (${light.room})`;
       bulkLightSelect.appendChild(bulkOption);
     }
+
+    if (data.items.length > 0) {
+      setFeedback(`${data.items.length} light(s) loaded`, "success");
+    } else {
+      setFeedback("No lights available", "neutral");
+    }
   } catch {
-    setFeedback("Unable to reach API");
+    setFeedback("Unable to reach API", "error");
   }
 };
 
@@ -162,7 +170,7 @@ const loadSelectedLight = async () => {
   const selectedLightId = lightSelect.value;
 
   if (!selectedLightId) {
-    setFeedback("Select a light first");
+    setFeedback("Select a light first", "error");
     return;
   }
 
@@ -174,13 +182,14 @@ const loadSelectedLight = async () => {
     const data = await response.json();
 
     if (!response.ok) {
-      setFeedback(data.detail || "Unable to load light");
+      setFeedback(data.detail || "Unable to load light", "error");
       return;
     }
 
     renderLight(data.item);
+    setFeedback(`Light '${data.item.name}' loaded`, "success");
   } catch {
-    setFeedback("Unable to reach API");
+    setFeedback("Unable to reach API", "error");
   }
 };
 
@@ -190,7 +199,7 @@ const runLightAction = async (action) => {
   const selectedLightId = getSelectedLightId();
 
   if (!selectedLightId) {
-    setFeedback("Select a light first");
+    setFeedback("Select a light first", "error");
     return;
   }
 
@@ -203,13 +212,14 @@ const runLightAction = async (action) => {
     const data = await response.json();
 
     if (!response.ok) {
-      setFeedback(data.detail || `Unable to ${action} light`);
+      setFeedback(data.detail || `Unable to ${action} light`, "error");
       return;
     }
 
     renderLight(data.light);
+    setFeedback(data.message, "success");
   } catch {
-    setFeedback("Unable to reach API");
+    setFeedback("Unable to reach API", "error");
   }
 };
 
@@ -219,7 +229,7 @@ const updateBrightness = async () => {
   const selectedLightId = getSelectedLightId();
 
   if (!selectedLightId) {
-    setFeedback("Select a light first");
+    setFeedback("Select a light first", "error");
     return;
   }
 
@@ -238,13 +248,14 @@ const updateBrightness = async () => {
     const data = await response.json();
 
     if (!response.ok) {
-      setFeedback(data.detail || "Unable to update light brightness");
+      setFeedback(data.detail || "Unable to update light brightness", "error");
       return;
     }
 
     renderLight(data.light);
+    setFeedback(data.message, "success");
   } catch {
-    setFeedback("Unable to reach API");
+    setFeedback("Unable to reach API", "error");
   }
 };
 
@@ -254,7 +265,7 @@ const updateColor = async () => {
   const selectedLightId = getSelectedLightId();
 
   if (!selectedLightId) {
-    setFeedback("Select a light first");
+    setFeedback("Select a light first", "error");
     return;
   }
 
@@ -273,13 +284,14 @@ const updateColor = async () => {
     const data = await response.json();
 
     if (!response.ok) {
-      setFeedback(data.detail || "Unable to update color");
+      setFeedback(data.detail || "Unable to update color", "error");
       return;
     }
 
     renderLight(data.light);
+    setFeedback(data.message, "success");
   } catch {
-    setFeedback("Unable to reach API");
+    setFeedback("Unable to reach API", "error");
   }
 };
 
@@ -289,7 +301,7 @@ const runBulkLightAction = async (action) => {
   const selectedLightIds = getSelectedLightIds();
 
   if (selectedLightIds.length === 0) {
-    setFeedback("Select at least one light");
+    setFeedback("Select at least one light", "error");
     return;
   }
 
@@ -308,17 +320,19 @@ const runBulkLightAction = async (action) => {
     const data = await response.json();
 
     if (!response.ok) {
-      setFeedback(data.detail || `Unable to execute bulk ${action}`);
+      setFeedback(data.detail || `Unable to execute bulk ${action}`, "error");
       return;
     }
 
     if (data.missing_light_ids.length > 0) {
-      setFeedback(`Missing lights: ${data.missing_light_ids.join(", ")}`);
+      setFeedback(`Missing lights: ${data.missing_light_ids.join(", ")}`, "error");
+    } else {
+      setFeedback(data.message, "success");
     }
 
     await loadLights();
   } catch {
-    setFeedback("Unable to reach API");
+    setFeedback("Unable to reach API", "error");
   }
 };
 
