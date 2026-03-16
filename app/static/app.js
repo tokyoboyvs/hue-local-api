@@ -12,6 +12,7 @@ const lightName = document.getElementById("light-name");
 const lightRoom = document.getElementById("light-room");
 const lightPower = document.getElementById("light-power");
 const lightBrightness = document.getElementById("light-brightness");
+const lightColorPreview = document.getElementById("light-color-preview");
 const lightColor = document.getElementById("light-color");
 
 const turnOnButton = document.getElementById("turn-on-btn");
@@ -71,8 +72,10 @@ const renderLight = (light) => {
   lightName.textContent = light.name;
   lightRoom.textContent = light.room;
   lightPower.textContent = light.is_on ? "on" : "off";
+  lightPower.className = light.is_on ? "power-badge power-on" : "power-badge power-off";
   lightBrightness.textContent = `${light.brightness}%`;
   lightColor.textContent = light.color;
+  lightColorPreview.style.backgroundColor = light.color;
 
   brightnessRange.value = light.brightness;
   brightnessValue.textContent = `${light.brightness}%`;
