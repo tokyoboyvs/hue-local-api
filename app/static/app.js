@@ -1,3 +1,5 @@
+const API_KEY_STORAGE_KEY = "hue-local-api-key";
+
 const apiKeyInput = document.getElementById("api-key");
 const lightSelect = document.getElementById("light-select");
 const roomSelect = document.getElementById("room-select");
@@ -40,6 +42,26 @@ const setFeedback = (message) => {
 
 const clearFeedback = () => {
   feedback.textContent = "";
+};
+
+const saveApiKey = () => {
+  try {
+    localStorage.setItem(API_KEY_STORAGE_KEY, apiKeyInput.value.trim());
+  } catch {
+    setFeedback("Unable to save API key in browser storage");
+  }
+};
+
+const loadSavedApiKey = () => {
+  try {
+    const savedApiKey = localStorage.getItem(API_KEY_STORAGE_KEY);
+
+    if (savedApiKey !== null) {
+      apiKeyInput.value = savedApiKey;
+    }
+  } catch {
+    setFeedback("Unable to read API key from browser storage");
+  }
 };
 
 const renderLight = (light) => {
@@ -286,6 +308,11 @@ const runBulkLightAction = async (action) => {
     const data = await response.json();
 
     if (!response.ok) {
+      setFeedback(data.detail || `Unable to execute bulk ${action}`);
+      return;
+    }
+
+    if (data.missing_light_ids.length > 0) {
       setFeedback(`Missing lights: ${data.missing_light_ids.join(", ")}`);
     }
 
@@ -295,7 +322,14 @@ const runBulkLightAction = async (action) => {
   }
 };
 
-apiKeyInput.addEventListener("input", loadRoomsAndLights);
+apiKeyInput.addEventListener("input", () => {
+  saveApiKey();
+  loadRoomsAndLights();
+});
+
+apiKeyInput.addEventListener("change", saveApiKey);
+apiKeyInput.addEventListener("blur", saveApiKey);
+
 roomSelect.addEventListener("change", loadLights);
 loadLightButton.addEventListener("click", loadSelectedLight);
 
@@ -314,4 +348,5 @@ brightnessRange.addEventListener("input", () => {
 applyBrightnessButton.addEventListener("click", updateBrightness);
 applyColorButton.addEventListener("click", updateColor);
 
+loadSavedApiKey();
 loadRoomsAndLights();
