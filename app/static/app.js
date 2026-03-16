@@ -140,6 +140,10 @@ const loadLights = async () => {
       }
     }
 
+    if (data.items.length > 0 && !lightSelect.value) {
+      lightSelect.value = data.items[0].id;
+    }
+
     if (data.items.length > 0) {
       setFeedback(`${data.items.length} light(s) loaded`, "success");
     } else {
@@ -183,6 +187,10 @@ const loadRooms = async () => {
 const loadRoomsAndLights = async () => {
   await loadRooms();
   await loadLights();
+
+  if (lightSelect.value) {
+    await loadSelectedLight();
+  }
 };
 
 const refreshUi = async () => {
@@ -395,9 +403,7 @@ apiKeyInput.addEventListener("blur", saveApiKey);
 roomSelect.addEventListener("change", async () => {
   await loadLights();
 
-  const selectedLightId = getSelectedLightId();
-
-  if (selectedLightId) {
+  if (lightSelect.value) {
     await loadSelectedLight();
   }
 });
