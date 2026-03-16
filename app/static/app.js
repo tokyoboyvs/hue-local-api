@@ -16,6 +16,11 @@ const turnOnButton = document.getElementById("turn-on-btn");
 const turnOffButton = document.getElementById("turn-off-btn");
 const toggleButton = document.getElementById("toggle-btn");
 
+const bulkLightSelect = document.getElementById("bulk-light-select");
+const bulkOnButton = document.getElementById("bulk-on-btn");
+const bulkOffButton = document.getElementById("bulk-off-btn");
+const bulkToggleButton = document.getElementById("bulk-toggle-btn");
+
 const brightnessRange = document.getElementById("brightness-range");
 const brightnessValue = document.getElementById("brightness-value");
 const applyBrightnessButton = document.getElementById("apply-brightness-btn");
@@ -56,6 +61,10 @@ const getSelectedLightId = () => {
   return lightSelect.value;
 };
 
+const getSelectedLightIds = () => {
+  return Array.from(bulkLightSelect.selectedOptions).map((option) => option.value);
+};
+
 const loadLights = async () => {
   clearFeedback();
 
@@ -76,12 +85,18 @@ const loadLights = async () => {
     }
 
     lightSelect.innerHTML = '<option value="">Select a light</option>';
+    bulkLightSelect.innerHTML = "";
 
     for (const light of data.items) {
       const option = document.createElement("option");
       option.value = light.id;
       option.textContent = `${light.name} (${light.room})`;
       lightSelect.appendChild(option);
+
+      const bulkOption = document.createElement("option");
+      bulkOption.value = light.id;
+      bulkOption.textContent = `${light.name} (${light.room})`;
+      bulkLightSelect.appendChild(bulkOption);
     }
   } catch {
     setFeedback("Unable to reach API");
@@ -246,12 +261,51 @@ const updateColor = async () => {
   }
 };
 
+const runBulkLightAction = async (action) => {
+  clearFeedback();
+
+  const selectedLightIds = getSelectedLightIds();
+
+  if (selectedLightIds.length === 0) {
+    setFeedback("Select at least one light");
+    return;
+  }
+
+  try {
+    const response = await fetch(`/api/lights/actions/${action}`, {
+      method: "POST",
+      headers: {
+        ...getHeaders(),
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        light_ids: selectedLightIds,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      setFeedback(`Missing lights: ${data.missing_light_ids.join(", ")}`);
+    }
+
+    await loadLights();
+  } catch {
+    setFeedback("Unable to reach API");
+  }
+};
+
 apiKeyInput.addEventListener("input", loadRoomsAndLights);
 roomSelect.addEventListener("change", loadLights);
 loadLightButton.addEventListener("click", loadSelectedLight);
+
 turnOnButton.addEventListener("click", () => runLightAction("on"));
 turnOffButton.addEventListener("click", () => runLightAction("off"));
 toggleButton.addEventListener("click", () => runLightAction("toggle"));
+
+bulkOnButton.addEventListener("click", () => runBulkLightAction("on"));
+bulkOffButton.addEventListener("click", () => runBulkLightAction("off"));
+bulkToggleButton.addEventListener("click", () => runBulkLightAction("toggle"));
 
 brightnessRange.addEventListener("input", () => {
   brightnessValue.textContent = `${brightnessRange.value}%`;

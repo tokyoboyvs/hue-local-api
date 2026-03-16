@@ -110,3 +110,11 @@ input[type="color"] {
   height: 48px;
   padding: 6px;
 }
+
+.bulk-panel {
+  margin-top: 20px;
+}
+
+#bulk-light-select {
+  min-height: 160px;
+}
