@@ -4,6 +4,7 @@ const apiKeyInput = document.getElementById("api-key");
 const lightSelect = document.getElementById("light-select");
 const roomSelect = document.getElementById("room-select");
 const loadLightButton = document.getElementById("load-light-btn");
+const refreshUiButton = document.getElementById("refresh-ui-btn");
 const statusCard = document.getElementById("status-card");
 const feedback = document.getElementById("feedback");
 
@@ -182,6 +183,27 @@ const loadRooms = async () => {
 const loadRoomsAndLights = async () => {
   await loadRooms();
   await loadLights();
+};
+
+const refreshUi = async () => {
+  clearFeedback();
+
+  const currentSelectedLightId = lightId.textContent;
+
+  await loadRooms();
+  await loadLights();
+
+  if (currentSelectedLightId) {
+    const optionExists = Array.from(lightSelect.options).some((option) => option.value === currentSelectedLightId);
+
+    if (optionExists) {
+      lightSelect.value = currentSelectedLightId;
+      await loadSelectedLight();
+      return;
+    }
+  }
+
+  setFeedback("Interface refreshed", "success");
 };
 
 const loadSelectedLight = async () => {
@@ -381,6 +403,7 @@ roomSelect.addEventListener("change", async () => {
 });
 
 loadLightButton.addEventListener("click", loadSelectedLight);
+refreshUiButton.addEventListener("click", refreshUi);
 
 turnOnButton.addEventListener("click", () => runLightAction("on"));
 turnOffButton.addEventListener("click", () => runLightAction("off"));
