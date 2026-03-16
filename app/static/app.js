@@ -1,5 +1,6 @@
 const apiKeyInput = document.getElementById("api-key");
 const lightSelect = document.getElementById("light-select");
+const roomSelect = document.getElementById("room-select");
 const loadLightButton = document.getElementById("load-light-btn");
 const statusCard = document.getElementById("status-card");
 const feedback = document.getElementById("feedback");
@@ -58,8 +59,11 @@ const getSelectedLightId = () => {
 const loadLights = async () => {
   clearFeedback();
 
+  const selectedRoom = roomSelect.value;
+  const endpoint = selectedRoom ? `/api/rooms/${selectedRoom}/lights` : "/api/lights";
+
   try {
-    const response = await fetch("/api/lights", {
+    const response = await fetch(endpoint, {
       headers: getHeaders(),
     });
 
@@ -82,6 +86,37 @@ const loadLights = async () => {
   } catch {
     setFeedback("Unable to reach API");
   }
+};
+
+const loadRooms = async () => {
+  try {
+    const response = await fetch("/api/rooms", {
+      headers: getHeaders(),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      roomSelect.innerHTML = '<option value="">All rooms</option>';
+      return;
+    }
+
+    roomSelect.innerHTML = '<option value="">All rooms</option>';
+
+    for (const room of data.items) {
+      const option = document.createElement("option");
+      option.value = room.name;
+      option.textContent = `${room.name} (${room.light_count})`;
+      roomSelect.appendChild(option);
+    }
+  } catch {
+    roomSelect.innerHTML = '<option value="">All rooms</option>';
+  }
+};
+
+const loadRoomsAndLights = async () => {
+  await loadRooms();
+  await loadLights();
 };
 
 const loadSelectedLight = async () => {
@@ -211,7 +246,8 @@ const updateColor = async () => {
   }
 };
 
-apiKeyInput.addEventListener("input", loadLights);
+apiKeyInput.addEventListener("input", loadRoomsAndLights);
+roomSelect.addEventListener("change", loadLights);
 loadLightButton.addEventListener("click", loadSelectedLight);
 turnOnButton.addEventListener("click", () => runLightAction("on"));
 turnOffButton.addEventListener("click", () => runLightAction("off"));
@@ -224,4 +260,4 @@ brightnessRange.addEventListener("input", () => {
 applyBrightnessButton.addEventListener("click", updateBrightness);
 applyColorButton.addEventListener("click", updateColor);
 
-loadLights();
+loadRoomsAndLights();
